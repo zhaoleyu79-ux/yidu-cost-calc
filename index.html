@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用工成本三态测算器 · 壹度</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{
+  --bg:#fdfcf9; --bg-card:#ffffff; --bg-accent:#f8f6f0;
+  --calc-bg:#f3efe7; --calc-bg-2:#eae3d4;
+  --text:#2c2c2c; --text-secondary:#5a5a5a; --text-muted:#8a8a8a;
+  --border:#e0dcd5;
+  --accent:#d4410b; --accent-soft:#fef3ee;
+  --blue:#1a6fb5; --blue-soft:#eef6fc;
+  --green:#2d7d46; --green-soft:#edf7f0;
+  --red:#b3261e; --red-soft:#fdeeee;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --radius:8px;
+  --font:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",system-ui,-apple-system,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;font-size:15px;-webkit-font-smoothing:antialiased}
+.container{max-width:1280px;margin:0 auto;padding:26px 20px 70px}
+strong{font-weight:700}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(253,252,249,.94);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;backdrop-filter:blur(12px)}
+.topbar .logo{font-weight:700;font-size:14px;color:var(--accent);letter-spacing:.5px}
+.topbar .meta{font-size:12.5px;color:var(--text-muted)}
+.cover{text-align:center;padding:30px 20px 20px}
+.cover .badge{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:12.5px;font-weight:600;padding:4px 14px;border-radius:20px;margin-bottom:12px;letter-spacing:.5px}
+.cover h1{font-size:24px;font-weight:700;letter-spacing:.5px}
+.cover .sub{color:var(--text-secondary);font-size:13.5px;margin-top:8px;max-width:780px;margin-left:auto;margin-right:auto}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:15.5px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h2 .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:700}
+.h2hint{font-weight:400;font-size:12.5px;color:var(--text-muted);margin-left:auto}
+.note{font-size:12.5px;color:var(--text-muted);margin-top:10px;line-height:1.8}
+.note b{color:var(--text-secondary)}
+.note .warn{color:var(--red)}
+/* ---------- legend ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:center;font-size:12.5px;color:var(--text-secondary);margin:0 0 14px;padding:8px 14px;background:var(--bg-card);border:1px dashed var(--border);border-radius:var(--radius)}
+.legend .lg{display:inline-flex;align-items:center;gap:6px}
+.legend .lg-note{color:var(--text-muted)}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid var(--border)}
+.sw-in{background:#fff}
+.sw-calc{background:var(--calc-bg)}
+/* ---------- hero tiles ---------- */
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.tile{background:var(--calc-bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.tile .k{font-size:12.5px;color:var(--text-secondary);font-weight:600}
+.tile .v{font-size:30px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.35;margin-top:2px}
+.tile .v.small{font-size:20px}
+.tile .u{font-size:13.5px;font-weight:600;margin-left:3px;color:var(--accent)}
+.tile .sub{font-size:11.5px;color:var(--text-muted);margin-top:3px;line-height:1.65}
+/* ---------- states ---------- */
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.state{border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;background:#fff}
+.state .st-head{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;color:#fff;font-size:12px;font-weight:800}
+.tag-a{background:#8a8a8a}.tag-b{background:var(--accent)}.tag-c{background:var(--blue)}
+.state p{font-size:12.8px;color:var(--text-secondary);line-height:1.65}
+.state .st-foot{margin-top:7px;font-size:11.5px;color:var(--text-muted)}
+/* ---------- fields ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 18px}
+.field label{display:block;font-size:12.5px;color:var(--text-secondary);margin-bottom:4px}
+.field label .lu{color:var(--text-muted);font-size:11.5px}
+.field input{width:100%}
+input[type=text],input[type=number],select{font:inherit;font-size:13.5px;padding:6px 9px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text)}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+/* ---------- tables ---------- */
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+table{width:100%;border-collapse:collapse;font-size:12.8px}
+th,td{border:1px solid var(--border);padding:4px 6px;vertical-align:middle}
+thead th{background:var(--bg-accent);font-weight:600;text-align:center;color:var(--text-secondary);font-size:12px;white-space:nowrap}
+th .th-sub{font-weight:400;font-size:10.5px;color:var(--text-muted)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.c-idx{text-align:center;color:var(--text-muted);font-size:12px;width:32px}
+#posTable{min-width:1180px}
+#posTable th.w-p,#posTable td.w-p{width:56px}
+#posTable th.w-num,#posTable td.w-num{width:64px}
+#posTable input,.in-num,.in-name{width:100%;font-size:12.5px;padding:3px 6px;border-radius:5px}
+.in-num{text-align:right}
+.in-num::-webkit-outer-spin-button,.in-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.in-num{-moz-appearance:textfield;appearance:textfield}
+select.in-batch{width:100%;font-size:12.5px;padding:3px 4px;border-radius:5px}
+td.calc{background:var(--calc-bg);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+td.cell-auto{background:var(--calc-bg);font-variant-numeric:tabular-nums}
+td.calc.c-b{font-weight:700}
+td.calc.c-a{color:var(--text-secondary)}
+td.calc.c-n{text-align:right;color:var(--text-secondary)}
+tr.total-row td{background:var(--calc-bg);font-weight:700}
+tr.total-row td.calc{background:var(--calc-bg-2)}
+td.c-del{text-align:center;width:30px}
+button.del{width:22px;height:22px;line-height:1;border:1px solid var(--border);background:#fff;border-radius:6px;color:var(--text-muted);cursor:pointer;font-size:13px;padding:0}
+button.del:hover{border-color:var(--red);color:var(--red);background:var(--red-soft)}
+.toolbar{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.toolbar .hint{font-size:12.5px;color:var(--text-muted)}
+#batchTable tbody td{background:var(--calc-bg)}
+/* ---------- bars ---------- */
+.bars{display:flex;gap:18px;align-items:flex-end;margin:18px 2px 4px}
+.bar-item{flex:1;text-align:center;min-width:0}
+.bar-val{font-size:12.5px;font-weight:700;color:var(--accent);margin-bottom:6px;font-variant-numeric:tabular-nums}
+.bar-track{height:120px;background:var(--bg-accent);border:1px solid var(--border);border-radius:6px;display:flex;align-items:flex-end;overflow:hidden}
+.bar-fill{width:100%;background:linear-gradient(180deg,#e0602f,#d4410b);border-radius:5px 5px 0 0;min-height:2px}
+.bar-lab{font-size:12.5px;font-weight:700;margin-top:6px}
+.bar-sub{font-size:11px;color:var(--text-muted);line-height:1.5;word-break:keep-all}
+/* ---------- buttons / misc ---------- */
+.btn{font:inherit;font-size:13.5px;font-weight:600;padding:8px 18px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:#b93809;color:#fff;border-color:#b93809}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.actions .spacer{flex:1}
+.actions .hint{font-size:12.5px;color:var(--text-muted)}
+.footer{text-align:center;color:var(--text-muted);font-size:12px;margin-top:26px;line-height:2}
+.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);background:#2c2c2c;color:#fff;font-size:13.5px;padding:10px 22px;border-radius:24px;opacity:0;pointer-events:none;transition:.25s;z-index:999;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.noscript{background:var(--red-soft);border:1px solid #f0c9c5;color:var(--red);padding:12px 18px;border-radius:var(--radius);margin-bottom:18px;font-size:13.5px}
+tfoot td{background:var(--calc-bg);font-weight:700}
+@media (max-width:760px){
+  .container{padding:18px 12px 60px}
+  .cover h1{font-size:20px}
+  .topbar .meta{display:none}
+  .bars{gap:8px}
+}
+@media print{
+  .topbar,.actions,.toolbar,.toast{display:none!important}
+  body{background:#fff;font-size:12px}
+  .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid;padding:12px 14px}
+  .table-wrap{overflow:visible;border:1px solid #ddd}
+  input,select{border:none;border-bottom:1px solid #c9c9c9;border-radius:0;padding:1px 2px;appearance:none;-webkit-appearance:none}
+  th,td{padding:2px 4px}
+  .tile,.bar-fill,.tag,.calc{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">壹度 · 用工成本三态测算</span>
+  <span class="meta">v0.1 ｜ 数据仅在本机浏览器处理，不上传</span>
+</div>
+
+<div class="container">
+
+  <header class="cover">
+    <div class="badge">A 现状 ／ B 合规基线 ／ C 任务态 · 实时测算</div>
+    <h1>用工成本三态测算器</h1>
+    <p class="sub">默认载入贵司回填数据（7 岗 425 人）与四省参数；调整下方任一数值，结论与分批结果即时更新。本页离线运行，数据不出本机。</p>
+  </header>
+
+  <noscript>
+    <div class="noscript">本页需要浏览器启用 JavaScript 才能实时测算。如不便使用，请联系项目对接人索取 PDF 版。</div>
+  </noscript>
+
+  <div class="legend">
+    <span class="lg"><i class="sw sw-in"></i>白底格子＝可输入，点格即改</span>
+    <span class="lg"><i class="sw sw-calc"></i>灰底格子＝自动计算，不用填</span>
+    <span class="lg-note">改任意白底数字 → 灰底结果与顶部结论实时更新</span>
+  </div>
+
+  <!-- 1 结论 -->
+  <section class="card">
+    <h2><span class="num">1</span>结论<span class="h2hint">随调整实时更新</span></h2>
+    <div class="hero">
+      <div class="tile">
+        <div class="k">年度节省 · 合规应缴口径（B−C）</div>
+        <div class="v"><span id="h-b">—</span><span class="u">万元</span></div>
+        <div class="sub">＝维持全日制、按合规基线应缴的部分——转换后不再发生</div>
+      </div>
+      <div class="tile">
+        <div class="k">年度节省 · 现状实缴口径（A−C）</div>
+        <div class="v"><span id="h-a">—</span><span class="u">万元</span></div>
+        <div class="sub">＝现在实际在缴的社保——转换后不再缴（未缴岗位该口径为 0）</div>
+      </div>
+      <div class="tile">
+        <div class="k">测算覆盖范围</div>
+        <div class="v small" id="h-scope">—</div>
+        <div class="sub" id="h-scope-sub">—</div>
+      </div>
+      <div class="tile">
+        <div class="k">人均节省 · 合规口径</div>
+        <div class="v"><span id="h-per">—</span><span class="u">万/人·年</span></div>
+        <div class="sub" id="h-per-sub">—</div>
+      </div>
+    </div>
+    <div class="note">
+      口径：仅计 <b>社保单位承担部分</b> 的年度差额（元/月/人 × 12 个月），不含量工资、津补贴等其他科目；商业保险三态均发生，属中性项不进差额。
+      年节省计已纳入批次的岗位、按 <b>当前转换比例 <span id="h-ratio">100%</span></b> 折算（见第 3 节；第 4 节「批次」列）。
+    </div>
+  </section>
+
+  <!-- 2 三态口径 -->
+  <section class="card">
+    <h2><span class="num">2</span>三态口径</h2>
+    <div class="states">
+      <div class="state">
+        <div class="st-head"><span class="tag tag-a">A</span>现状</div>
+        <p>现行实际发生：部分岗位已缴、部分未缴（如营业员未缴＝0）；下表按客户实报人均月成本计。</p>
+        <div class="st-foot">定位：对照参考</div>
+      </div>
+      <div class="state">
+        <div class="st-head"><span class="tag tag-b">B</span>合规基线</div>
+        <p>同批人员全额参保：基数 ＝ max（月均应发，省下限）× 单位费率。</p>
+        <div class="st-foot">定位：主对比基线</div>
+      </div>
+      <div class="state">
+        <div class="st-head"><span class="tag tag-c">C</span>任务态</div>
+        <p>灵活用工（任务制）：无雇主社保义务；商业意外险前置保留。</p>
+        <div class="st-foot">定位：本次方案态</div>
+      </div>
+    </div>
+    <div class="note">主输出 ＝ B − C 的年度社保差额（＝转换后不再发生的合规应缴部分）；工资类成本不在本口径内。延伸口径「全成本时薪 ＝（直接工资 ＋ 社保单位部分 ＋ 津补贴 ＋ 隐性成本）÷ 实际工时」待工时数据回收后启用。</div>
+  </section>
+
+  <!-- 3 测算参数 -->
+  <section class="card">
+    <h2><span class="num">3</span>测算参数<span class="h2hint">可修改 · 修改后全页重算</span></h2>
+    <div class="grid">
+      <div class="field">
+        <label>单位费率（%） <span class="lu">＝实报 1,099 ÷ 皖下限 4,354 反推；构成待核</span></label>
+        <input type="number" id="p-rate" min="0" step="0.0001">
+      </div>
+      <div class="field">
+        <label>转换比例（%） <span class="lu">默认 100（全转）；按比例折算年节省</span></label>
+        <input type="number" id="p-ratio" min="0" max="100" step="1">
+      </div>
+    </div>
+    <div class="table-wrap" style="margin-top:12px;max-width:760px">
+      <table>
+        <thead>
+          <tr><th>省</th><th>缴费基数下限（元/月）<br><span class="th-sub">可修改</span></th><th>下限口径 B 值<br><span class="th-sub">元/人·月 · 自动</span></th><th>时效 / 出处</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>安徽</strong></td><td><input type="number" id="fl-0" class="in-num" min="0" step="1"></td><td class="num cell-auto" id="fv-0">—</td><td>皖人社秘〔2026〕113号</td></tr>
+          <tr><td><strong>江苏</strong></td><td><input type="number" id="fl-1" class="in-num" min="0" step="1"></td><td class="num cell-auto" id="fv-1">—</td><td>暂定（2026 年起暂按上年度标准）</td></tr>
+          <tr><td><strong>山东</strong></td><td><input type="number" id="fl-2" class="in-num" min="0" step="1"></td><td class="num cell-auto" id="fv-2">—</td><td>鲁人社字〔2026〕75号</td></tr>
+          <tr><td><strong>河南</strong></td><td><input type="number" id="fl-3" class="in-num" min="0" step="1"></td><td class="num cell-auto" id="fv-3">—</td><td>旧标顺延（2026-07 新标未出）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">B 值 ＝ 下限 × 单位费率（仅下限口径）；月薪高于下限的岗位按实薪计（取大），见第 4 节。</div>
+  </section>
+
+  <!-- 4 岗位测算 -->
+  <section class="card">
+    <h2><span class="num">4</span>岗位测算<span class="h2hint">白底列可修改；灰底列为自动计算</span></h2>
+    <div class="table-wrap">
+      <table id="posTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>岗位<br><span class="th-sub">可改</span></th>
+            <th class="w-num">人数<br><span class="th-sub">自动</span></th>
+            <th class="w-p">安徽<br><span class="th-sub">可改</span></th><th class="w-p">江苏<br><span class="th-sub">可改</span></th><th class="w-p">山东<br><span class="th-sub">可改</span></th><th class="w-p">河南<br><span class="th-sub">可改</span></th>
+            <th>月均应发<br><span class="th-sub">元/月 · 可改</span></th>
+            <th>现状实缴<br><span class="th-sub">元/人·月 · 可改</span></th>
+            <th>批次<br><span class="th-sub">可改</span></th>
+            <th class="w-num">A 现状·年<br><span class="th-sub">万 · 自动</span></th>
+            <th class="w-num">B 合规·年<br><span class="th-sub">万 · 自动</span></th>
+            <th>B 人均·年<br><span class="th-sub">元 · 自动</span></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td></td>
+            <td>合计</td>
+            <td class="num" id="t-n">—</td>
+            <td class="num" id="t-p0">—</td>
+            <td class="num" id="t-p1">—</td>
+            <td class="num" id="t-p2">—</td>
+            <td class="num" id="t-p3">—</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td class="calc" id="t-a">—</td>
+            <td class="calc" id="t-b">—</td>
+            <td>—</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="addRowBtn">＋ 添加岗位</button>
+      <span class="hint">A / B 两列＝该岗位全部人数合计的社保年支出（万元，仅社保单位部分、不含工资）；「B 人均·年」＝总额 ÷ 人数，即该岗位每转 1 人、一年可省（合规口径）。</span>
+    </div>
+    <div class="note">现状实缴：客户实报人均月成本（部分缴纳按填报口径视为人均；未缴填 0）。已剔除「城市负责人」23 人（区域管理岗 · 保留层）与配送 / 物流中心岗位，未纳入本测算；如需对照，可「添加岗位」自行补行。</div>
+  </section>
+
+  <!-- 5 分批推进 -->
+  <section class="card">
+    <h2><span class="num">5</span>分批推进（方案一 · 岗位分批）<span class="h2hint">按第 4 节「批次」列自动汇总</span></h2>
+    <div class="table-wrap" style="max-width:980px">
+      <table id="batchTable">
+        <thead>
+          <tr>
+            <th>批次</th><th>覆盖岗位</th>
+            <th class="num">人数</th>
+            <th class="num">本批·A（万）</th><th class="num">本批·B（万）</th>
+            <th class="num">累计·A（万）</th><th class="num">累计·B（万）</th>
+          </tr>
+        </thead>
+        <tbody id="batch-body"></tbody>
+        <tfoot>
+          <tr>
+            <td style="white-space:nowrap">4 批累计</td><td>—</td>
+            <td class="num" id="bt-n">—</td>
+            <td>—</td><td>—</td>
+            <td class="num" id="bt-a">—</td><td class="num" id="bt-b">—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="bars" id="bars"></div>
+    <div class="note">
+      年化节省已按转换比例 <b id="b-ratio">100%</b> 折算；<b>A</b>＝现状实缴口径、<b>B</b>＝合规应缴口径（累计柱状图按 B 口径）。分批只改变节奏与风险分布，不改变全转总账。
+    </div>
+    <div class="note">
+      <b>排序理由（先易后难、与组织架构对齐）</b>：1 批 产线计件型任务最标准、单省（试点）→ 2 批 门店任务卡已有底稿、量最大 → 3 批 巡店任务化（待复核类，与业务对齐后启动）→ 4 批 涉商业机密与谈判，放最后。
+      <b>建议节奏：</b>先影子测算（零成本、不改流程）→ 1 批试点 → 铺开 → 收口；批内可按比例爬坡（示意 30% → 70% → 100%）。某行设为「不纳入」＝该岗位保留现状，不计入节省。
+    </div>
+  </section>
+
+  <!-- 6 边界 -->
+  <section class="card">
+    <h2><span class="num">6</span>口径、边界与待核</h2>
+    <div class="note" style="margin-top:0">
+      ① <b>两个节省口径</b>：合规应缴（B−C）＝维持全日制应缴、转换后不再发生；现状实缴（A−C）＝现在实际在缴、转换后不再缴（未缴岗位该口径为 0）。<br>
+      ② <b>中性项</b>：商业保险（约 100 / 200 / 300 元/人·年）在 A、B、C 三态均发生 → 不进差额，仅列示。<br>
+      ③ <b>待核</b>：1,099 与费率 25.24% 为实报反推，构成（含不含医疗）待对齐；河南 3,831 为旧标顺延、江苏 4,952 暂定，新标发布后按同框架重算；督导体系 / 开发专员属「待复核类」（系统建议不可拆 × HR 判可拆），批次顺序以业务对齐为准。<br>
+      ④ <b>数据性质</b>：基于贵司初步回填数据（09-29）的模拟测算，用于方向判断与节奏规划，随数据复核滚动精算。
+    </div>
+  </section>
+
+  <!-- 操作 -->
+  <section class="card actions">
+    <button class="btn btn-primary" id="btnCsv">导出当前测算（CSV）</button>
+    <button class="btn" id="btnPrint">打印 / 存为 PDF</button>
+    <button class="btn" id="btnReset">恢复默认数据</button>
+    <span class="spacer"></span>
+    <span class="hint">调整自动暂存于本机浏览器；「恢复默认数据」＝回到贵司 09-29 回填口径。</span>
+  </section>
+
+  <div class="footer">
+    数据来源：客户回填《壹度用工成本数据_20260930》（臧悦 09-29 填报）｜四省参数：皖人社秘〔2026〕113号 · 江苏省三部门缴费工资申报通知（暂定）· 鲁人社字〔2026〕75号 · 豫人社办〔2025〕67号<br>
+    本页面为离线文件，所有数据仅在您的浏览器本地处理。｜ 用工成本三态测算器 v0.1 · 2026-10
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+var PROVS  = ['安徽','江苏','山东','河南'];
+var LS_KEY = 'yidu-cost-calc-v0.1';
+
+var DEFAULTS = {
+  rate: 25.2412,   /* 单位费率 %：1,099 ÷ 4,354 反推 */
+  ratio: 100,      /* 转换比例 % */
+  floors: { '安徽':4354, '江苏':4952, '山东':4573, '河南':3831 },
+  rows: [
+    { name:'操作工',   n:[15,0,0,0],    wage:3500,    paid:1099, batch:1 },
+    { name:'店员',     n:[46,4,12,8],   wage:3200,    paid:1099, batch:2 },
+    { name:'营业员',   n:[0,0,0,30],    wage:3500,    paid:0,    batch:2 },
+    { name:'夜班店员', n:[46,4,12,8],   wage:3500,    paid:1099, batch:2 },
+    { name:'开发专员', n:[25,25,25,25], wage:6405.3,  paid:1099, batch:4 },
+    { name:'实习督导', n:[5,5,5,5],     wage:3100,    paid:1099, batch:3 },
+    { name:'营运督导', n:[45,30,30,15], wage:4145.23, paid:1099, batch:3 }
+  ]
+};
+
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function $(id){ return document.getElementById(id); }
+function num(v){ var x = parseFloat(v); return isNaN(x) ? 0 : x; }
+function fmtInt(x){ return Math.round(x).toLocaleString('en-US'); }
+function f1(x){ return (Math.round(x*10)/10).toFixed(1); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function txt(el, s){ if(el) el.textContent = s; }
+
+var S = clone(DEFAULTS);
+var restoredFlag = false;
+
+/* ---------- 计算 ---------- */
+function calcRow(row){
+  var n = 0, A = 0, B = 0, i, ni, base;
+  for(i = 0; i < 4; i++){
+    ni = num(row.n[i]);
+    n += ni;
+    A += ni * num(row.paid) * 12;
+    base = Math.max(num(row.wage), num(S.floors[PROVS[i]]));
+    B += ni * base * (num(S.rate) / 100) * 12;
+  }
+  return { n:n, A:A, B:B, per: n > 0 ? B / n : null };
+}
+
+function calcAll(){
+  var rows = [];
+  var tot   = { n:0, pv:[0,0,0,0], A:0, B:0 };
+  var scope = { cnt:0, n:0, pv:[0,0,0,0], A:0, B:0 };
+  var perMin = null, perMax = null;
+  var batches = [1,2,3,4].map(function(b){ return { b:b, names:[], n:0, A:0, B:0 }; });
+  var r = num(S.ratio) / 100;
+
+  S.rows.forEach(function(row){
+    var c = calcRow(row);
+    rows.push(c);
+    tot.n += c.n; tot.A += c.A; tot.B += c.B;
+    var b = parseInt(row.batch, 10);
+    var inB = (b >= 1 && b <= 4);
+    if(c.n > 0){
+      for(var i = 0; i < 4; i++) tot.pv[i] += num(row.n[i]);
+      if(inB){
+        scope.cnt++; scope.n += c.n; scope.A += c.A; scope.B += c.B;
+        for(var j = 0; j < 4; j++) scope.pv[j] += num(row.n[j]);
+        for(var k = 0; k < 4; k++){
+          if(batches[k].b === b){
+            batches[k].names.push(row.name || '未命名');
+            batches[k].n += c.n; batches[k].A += c.A; batches[k].B += c.B;
+          }
+        }
+        if(c.per !== null){
+          if(perMin === null || c.per < perMin) perMin = c.per;
+          if(perMax === null || c.per > perMax) perMax = c.per;
+        }
+      }
+    }
+  });
+
+  var cn = 0, ca = 0, cb = 0;
+  batches.forEach(function(x){
+    cn += x.n; ca += x.A; cb += x.B;
+    x.cumN = cn; x.cumA = ca; x.cumB = cb;
+    x.savA = x.A * r;    x.savB = x.B * r;
+    x.cumSavA = ca * r;  x.cumSavB = cb * r;
+  });
+
+  return {
+    rows: rows, tot: tot, scope: scope, ratio: r,
+    savA: scope.A * r, savB: scope.B * r,
+    perCap: scope.n > 0 ? scope.B / scope.n : null,
+    perMin: perMin, perMax: perMax,
+    batches: batches
+  };
+}
+
+/* ---------- 渲染：岗位行 ---------- */
+function batchOpts(sel){
+  var out = '';
+  [1,2,3,4].forEach(function(b){
+    out += '<option value="' + b + '"' + (parseInt(sel,10) === b ? ' selected' : '') + '>' + b + ' 批</option>';
+  });
+  out += '<option value="0"' + (parseInt(sel,10) === 0 || sel === '' || sel === null ? ' selected' : '') + '>不纳入</option>';
+  return out;
+}
+
+function buildTr(row, i){
+  var tr = document.createElement('tr');
+  tr.className = 'item-row';
+  var h = '';
+  h += '<td class="c-idx">' + (i+1) + '</td>';
+  h += '<td><input type="text" class="in-name" value="' + esc(row.name) + '" title="岗位名称"></td>';
+  h += '<td class="calc c-n">—</td>';
+  for(var k = 0; k < 4; k++){
+    h += '<td><input type="number" min="0" step="1" class="in-num in-dist" data-i="' + k + '" value="' + (row.n[k] == null ? '' : row.n[k]) + '"></td>';
+  }
+  h += '<td><input type="number" min="0" step="any" class="in-num in-wage" value="' + (row.wage == null ? '' : row.wage) + '"></td>';
+  h += '<td><input type="number" min="0" step="any" class="in-num in-paid" value="' + (row.paid == null ? '' : row.paid) + '"></td>';
+  h += '<td><select class="in-batch">' + batchOpts(row.batch) + '</select></td>';
+  h += '<td class="calc c-a">—</td>';
+  h += '<td class="calc c-b">—</td>';
+  h += '<td class="calc c-per">—</td>';
+  h += '<td class="c-del"><button class="del" title="删除该行" type="button">&times;</button></td>';
+  tr.innerHTML = h;
+  return tr;
+}
+
+function renderRows(){
+  var tb = $('tbody');
+  tb.innerHTML = '';
+  S.rows.forEach(function(row, i){ tb.appendChild(buildTr(row, i)); });
+}
+
+function rowIndex(tr){
+  var trs = document.querySelectorAll('#tbody tr.item-row');
+  for(var i = 0; i < trs.length; i++){ if(trs[i] === tr) return i; }
+  return -1;
+}
+
+/* ---------- 渲染：全部结果 ---------- */
+function updateComputed(){
+  var C = calcAll();
+
+  var trs = document.querySelectorAll('#tbody tr.item-row');
+  C.rows.forEach(function(c, i){
+    var tr = trs[i];
+    if(!tr) return;
+    txt(tr.querySelector('.c-n'),  c.n > 0 ? fmtInt(c.n) : '—');
+    txt(tr.querySelector('.c-a'),  c.n > 0 ? f1(c.A / 10000) : '—');
+    txt(tr.querySelector('.c-b'),  c.n > 0 ? f1(c.B / 10000) : '—');
+    txt(tr.querySelector('.c-per'), c.per === null ? '—' : fmtInt(c.per));
+  });
+
+  txt($('t-n'),  fmtInt(C.tot.n));
+  txt($('t-p0'), fmtInt(C.tot.pv[0]));
+  txt($('t-p1'), fmtInt(C.tot.pv[1]));
+  txt($('t-p2'), fmtInt(C.tot.pv[2]));
+  txt($('t-p3'), fmtInt(C.tot.pv[3]));
+  txt($('t-a'),  C.tot.n > 0 ? f1(C.tot.A / 10000) : '—');
+  txt($('t-b'),  C.tot.n > 0 ? f1(C.tot.B / 10000) : '—');
+
+  /* hero */
+  txt($('h-b'), C.scope.n > 0 ? f1(C.savB / 10000) : '—');
+  txt($('h-a'), C.scope.n > 0 ? f1(C.savA / 10000) : '—');
+  txt($('h-scope'), C.scope.cnt > 0 ? (C.scope.cnt + ' 岗 · ' + fmtInt(C.scope.n) + ' 人') : '—');
+  var subScope = '皖 ' + fmtInt(C.scope.pv[0]) + ' ｜ 苏 ' + fmtInt(C.scope.pv[1]) + ' ｜ 鲁 ' + fmtInt(C.scope.pv[2]) + ' ｜ 豫 ' + fmtInt(C.scope.pv[3]);
+  if(C.ratio < 1 && C.scope.n > 0) subScope += '；按当前比例约转换 ' + fmtInt(C.scope.n * C.ratio) + ' 人';
+  txt($('h-scope-sub'), C.scope.cnt > 0 ? subScope : '—');
+  txt($('h-per'), C.perCap === null ? '—' : ('≈ ' + (C.perCap / 10000).toFixed(2)));
+  txt($('h-per-sub'), (C.perMin !== null) ? ('区间 ' + (C.perMin / 10000).toFixed(2) + '–' + (C.perMax / 10000).toFixed(2) + ' 万（按岗位）') : '—');
+  txt($('h-ratio'), num(S.ratio) + '%');
+  txt($('b-ratio'), num(S.ratio) + '%');
+
+  /* 分批表 */
+  var bh = '';
+  C.batches.forEach(function(x){
+    bh += '<tr>'
+       +  '<td class="c-idx">' + x.b + ' 批</td>'
+       +  '<td>' + (x.names.length ? esc(x.names.join('、')) : '<span style="color:var(--text-muted)">未分配岗位</span>') + '</td>'
+       +  '<td class="num">' + (x.n ? fmtInt(x.n) : '—') + '</td>'
+       +  '<td class="num">' + (x.savA ? f1(x.savA / 10000) : '—') + '</td>'
+       +  '<td class="num">' + (x.savB ? f1(x.savB / 10000) : '—') + '</td>'
+       +  '<td class="num">' + (x.cumSavA ? f1(x.cumSavA / 10000) : '—') + '</td>'
+       +  '<td class="num">' + (x.cumSavB ? f1(x.cumSavB / 10000) : '—') + '</td>'
+       +  '</tr>';
+  });
+  $('batch-body').innerHTML = bh;
+  txt($('bt-n'), C.scope.n > 0 ? fmtInt(C.scope.n) : '—');
+  txt($('bt-a'), C.scope.n > 0 ? f1(C.savA / 10000) : '—');
+  txt($('bt-b'), C.scope.n > 0 ? f1(C.savB / 10000) : '—');
+
+  /* 累计柱状图（B 口径） */
+  var max = 0;
+  C.batches.forEach(function(x){ if(x.cumSavB > max) max = x.cumSavB; });
+  var bars = '';
+  C.batches.forEach(function(x){
+    var pctH = max > 0 ? Math.round(x.cumSavB / max * 100) : 0;
+    var share = C.savB > 0 ? Math.round(x.cumSavB / C.savB * 100) : 0;
+    var range = x.names.length ? x.names.join('、') : '—';
+    bars += '<div class="bar-item">'
+         +  '<div class="bar-val">' + (x.cumSavB > 0 ? f1(x.cumSavB / 10000) + ' 万 · ' + share + '%' : '—') + '</div>'
+         +  '<div class="bar-track"><div class="bar-fill" style="height:' + (x.cumSavB > 0 ? Math.max(pctH, 2) : 0) + '%"></div></div>'
+         +  '<div class="bar-lab">' + x.b + ' 批</div>'
+         +  '<div class="bar-sub">' + esc(range) + '</div>'
+         +  '</div>';
+  });
+  $('bars').innerHTML = bars;
+
+  /* 参数表 B 值 */
+  PROVS.forEach(function(p, k){
+    txt($('fv-' + k), fmtInt(num(S.floors[p]) * num(S.rate) / 100));
+  });
+}
+
+/* ---------- 状态存取 ---------- */
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
+function restoreState(){
+  try{
+    var raw = localStorage.getItem(LS_KEY);
+    if(!raw) return false;
+    var o = JSON.parse(raw);
+    if(!o || !o.rows || !o.rows.length || !o.floors) return false;
+    S = o;
+    if(typeof S.rate !== 'number' || isNaN(S.rate)) S.rate = DEFAULTS.rate;
+    if(typeof S.ratio !== 'number' || isNaN(S.ratio)) S.ratio = DEFAULTS.ratio;
+    PROVS.forEach(function(p){
+      if(typeof S.floors[p] !== 'number' || isNaN(S.floors[p])) S.floors[p] = DEFAULTS.floors[p];
+    });
+    return true;
+  }catch(e){ return false; }
+}
+
+function hydrate(){
+  $('p-rate').value = S.rate;
+  $('p-ratio').value = S.ratio;
+  PROVS.forEach(function(p, k){ $('fl-' + k).value = S.floors[p]; });
+}
+
+/* ---------- 导出 ---------- */
+function csvCell(x){
+  x = (x === null || x === undefined) ? '' : String(x);
+  if(/[",\n\r]/.test(x)) x = '"' + x.replace(/"/g, '""') + '"';
+  return x;
+}
+function stamp(){
+  var d = new Date();
+  function z(x){ return (x < 10 ? '0' : '') + x; }
+  return d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate());
+}
+function buildCsv(){
+  var C = calcAll();
+  var L = [];
+  L.push('壹度 · 用工成本三态测算（导出）');
+  L.push(['导出时间', new Date().toLocaleString('zh-CN')].map(csvCell).join(','));
+  L.push(['单位费率(%)', S.rate, '转换比例(%)', S.ratio].map(csvCell).join(','));
+  L.push(['四省下限(元/月)', PROVS.map(function(p){ return p + ' ' + S.floors[p]; }).join('；')].map(csvCell).join(','));
+  L.push('');
+  L.push(['岗位','安徽','江苏','山东','河南','人数','月均应发(元/月)','现状实缴(元/人·月)','批次','A现状·年(万)','B合规·年(万)','B人均·年(元)'].join(','));
+  S.rows.forEach(function(r, i){
+    var c = C.rows[i];
+    var b = parseInt(r.batch, 10);
+    L.push([
+      r.name || '', num(r.n[0]), num(r.n[1]), num(r.n[2]), num(r.n[3]),
+      c.n, num(r.wage), num(r.paid),
+      (b >= 1 && b <= 4) ? (b + ' 批') : '不纳入',
+      c.n > 0 ? f1(c.A / 10000) : '', c.n > 0 ? f1(c.B / 10000) : '',
+      c.per === null ? '' : Math.round(c.per)
+    ].map(csvCell).join(','));
+  });
+  L.push(['合计', C.tot.pv[0], C.tot.pv[1], C.tot.pv[2], C.tot.pv[3], C.tot.n, '', '', '', f1(C.tot.A / 10000), f1(C.tot.B / 10000), ''].map(csvCell).join(','));
+  L.push('');
+  L.push('分批推进（方案一 · 岗位分批）｜年化节省已按转换比例折算');
+  L.push(['批次','覆盖岗位','人数','本批·A(万)','本批·B(万)','累计·A(万)','累计·B(万)'].join(','));
+  C.batches.forEach(function(x){
+    L.push([x.b + ' 批', x.names.join('、'), x.n, f1(x.savA / 10000), f1(x.savB / 10000), f1(x.cumSavA / 10000), f1(x.cumSavB / 10000)].map(csvCell).join(','));
+  });
+  L.push(['4 批累计', '', C.scope.n, f1(C.savA / 10000), f1(C.savB / 10000), f1(C.savA / 10000), f1(C.savB / 10000)].map(csvCell).join(','));
+  L.push('');
+  L.push('口径：仅计社保单位承担部分（元/月/人×12）；A现状=客户实报；B合规=max(月薪,省下限)×费率；C任务态社保为0；商业保险为中性项。数据性质：demo 级模拟。');
+  return L.join('\r\n');
+}
+function download(filename, text, withBom){
+  var blob = new Blob([withBom ? '﻿' : '', text], { type:'text/plain;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 300);
+}
+function toast(msg){
+  var t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+/* ---------- 事件 ---------- */
+function bind(){
+  /* 参数 */
+  $('p-rate').addEventListener('input', function(){ S.rate = num(this.value); updateComputed(); saveState(); });
+  $('p-ratio').addEventListener('input', function(){ S.ratio = num(this.value); updateComputed(); saveState(); });
+  PROVS.forEach(function(p, k){
+    $('fl-' + k).addEventListener('input', function(){ S.floors[p] = num(this.value); updateComputed(); saveState(); });
+  });
+
+  /* 表格行：输入 */
+  $('tbody').addEventListener('input', function(e){
+    var t = e.target;
+    var tr = t.closest ? t.closest('tr') : null;
+    if(!tr) return;
+    var i = rowIndex(tr);
+    if(i < 0) return;
+    var r = S.rows[i];
+    if(t.classList.contains('in-name')){ r.name = t.value; }
+    else if(t.classList.contains('in-dist')){ r.n[parseInt(t.getAttribute('data-i'), 10)] = (t.value === '' ? null : num(t.value)); }
+    else if(t.classList.contains('in-wage')){ r.wage = (t.value === '' ? null : num(t.value)); }
+    else if(t.classList.contains('in-paid')){ r.paid = (t.value === '' ? null : num(t.value)); }
+    else { return; }
+    updateComputed(); saveState();
+  });
+  $('tbody').addEventListener('change', function(e){
+    var t = e.target;
+    if(!t.classList.contains('in-batch')) return;
+    var tr = t.closest ? t.closest('tr') : null;
+    if(!tr) return;
+    var i = rowIndex(tr);
+    if(i < 0) return;
+    S.rows[i].batch = parseInt(t.value, 10) || 0;
+    updateComputed(); saveState();
+  });
+  $('tbody').addEventListener('click', function(e){
+    if(!e.target.classList || !e.target.classList.contains('del')) return;
+    var tr = e.target.closest('tr');
+    if(!tr) return;
+    var i = rowIndex(tr);
+    if(i < 0) return;
+    if(S.rows.length <= 1){ toast('至少保留一个岗位行'); return; }
+    S.rows.splice(i, 1);
+    renderRows(); updateComputed(); saveState();
+    toast('已删除该行');
+  });
+
+  /* 添加行 */
+  $('addRowBtn').addEventListener('click', function(){
+    S.rows.push({ name:'', n:[null,null,null,null], wage:null, paid:null, batch:0 });
+    renderRows(); updateComputed(); saveState();
+    var trs = document.querySelectorAll('#tbody tr.item-row');
+    var last = trs[trs.length - 1];
+    if(last){ var inp = last.querySelector('.in-name'); if(inp) inp.focus(); }
+    toast('已添加岗位行（批次默认「不纳入」，可改为 1–4 批）');
+  });
+
+  /* 按钮 */
+  $('btnCsv').addEventListener('click', function(){
+    download('壹度用工成本三态测算_' + stamp() + '.csv', buildCsv(), true);
+    toast('已导出 CSV（可用 Excel 打开）');
+  });
+  $('btnPrint').addEventListener('click', function(){ window.print(); });
+  $('btnReset').addEventListener('click', function(){
+    if(!confirm('恢复为壹度回填默认数据（7 岗 425 人）？当前所有调整将被清除。')) return;
+    try{ localStorage.removeItem(LS_KEY); }catch(e){}
+    S = clone(DEFAULTS);
+    hydrate(); renderRows(); updateComputed();
+    toast('已恢复默认数据');
+  });
+}
+
+/* ---------- init ---------- */
+restoredFlag = restoreState();
+hydrate();
+renderRows();
+bind();
+updateComputed();
+if(restoredFlag) toast('已恢复上次调整（可点「恢复默认数据」重置）');
+})();
+</script>
+</body>
+</html>
